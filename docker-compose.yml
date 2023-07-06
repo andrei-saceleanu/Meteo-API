@@ -1,0 +1,48 @@
+version: '3.3'
+services:
+  tema2_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: sprcpass
+      POSTGRES_DB: tema2_db
+    ports:
+      - "5432:5432"
+    networks:
+      - network_server
+      - network_manager
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+  tema2_server:
+    depends_on:
+      - tema2_db
+    build: .
+    ports:
+      - "6000:5000"
+    networks:
+      - network_server
+    environment:
+      DB_PORT: 5432
+      DB_PASSWORD: sprcpass
+      DB_USER: postgres
+      DB: tema2_db
+
+  tema2_dbmanager:
+    depends_on:
+      - tema2_db
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: sprc_student@domain.com
+      PGADMIN_DEFAULT_PASSWORD: SPRC
+    networks:
+      - network_manager
+
+networks:
+  network_server: {}
+  network_manager: {}
+
+volumes:
+  db_data: {}
